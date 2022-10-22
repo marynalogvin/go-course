@@ -44,17 +44,18 @@ func main() {
 	//--Requirements:
 	//* Use the accessGranted() and accessDenied() functions to display
 	//  informational messages
-	//* Access at any time: Admin, Manager
 	if role == Admin || role == Manager {
+		//* Access at any time: Admin, Manager
 		accessGranted()
-		// * Access weekends: Contractor
+
 	} else if role == Contractor && (today == Saturday || today == Sunday) {
+		// * Access weekends: Contractor
 		accessDenied()
-		// * Access weekdays: Member
 	} else if role == Member && (today != Saturday && today != Sunday) {
+		// * Access weekdays: Member
 		accessGranted()
-		// * Access Mondays, Wednesdays, and Fridays: Guest
 	} else if role == Guest && (today == Monday || today == Wednesday || today == Friday) {
+		// * Access Mondays, Wednesdays, and Fridays: Guest
 		accessGranted()
 	} else {
 		accessDenied()

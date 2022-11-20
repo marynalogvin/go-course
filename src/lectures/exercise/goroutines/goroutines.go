@@ -28,12 +28,40 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
+func calculateFileSum(s string) int32 {
+	file, err := os.Open(s)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner := bufio.NewScanner(file)
+	fileSum := 0
+	for fileScanner.Scan() {
+		text := fileScanner.Text()
+		num, err := strconv.Atoi(text)
+		if err != nil {
+			continue
+		}
+		fileSum += num
+	}
+	return int32(fileSum)
+}
+
 func main() {
 	files := []string{"num1.txt", "num2.txt", "num3.txt", "num4.txt", "num5.txt"}
+	var totalSum int32 = 0
+	for i := 0; i < len(files); i++ {
+		b := files[i]
+		calculate := func() {
+			atomic.AddInt32(&totalSum, calculateFileSum(b))
+		}
+		go calculate()
+	}
+	time.Sleep(10 * time.Millisecond)
+	fmt.Println(totalSum)
 }

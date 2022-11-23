@@ -30,11 +30,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"sync/atomic"
-	"time"
 )
 
-func calculateFileSum(s string) int32 {
+var TotalSum int64
+
+func CalculateFileSum(s string, wg *sync.WaitGroup) {
 	file, err := os.Open(s)
 	if err != nil {
 		fmt.Println(err)
@@ -49,19 +51,18 @@ func calculateFileSum(s string) int32 {
 		}
 		fileSum += num
 	}
-	return int32(fileSum)
+	atomic.AddInt64(&TotalSum, int64(fileSum))
+	wg.Done()
 }
 
 func main() {
 	files := []string{"num1.txt", "num2.txt", "num3.txt", "num4.txt", "num5.txt"}
-	var totalSum int32 = 0
+
+	var w sync.WaitGroup
 	for i := 0; i < len(files); i++ {
-		b := files[i]
-		calculate := func() {
-			atomic.AddInt32(&totalSum, calculateFileSum(b))
-		}
-		go calculate()
+		w.Add(1)
+		go CalculateFileSum(files[i], &w)
 	}
-	time.Sleep(10 * time.Millisecond)
-	fmt.Println(totalSum)
+	w.Wait()
+	fmt.Println("The total sum is", TotalSum)
 }

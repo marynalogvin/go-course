@@ -19,7 +19,47 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
+	"sync"
+	"unicode"
 )
 
-func main() {}
+func inputAnalize() []string {
+	reader := bufio.NewReader(os.Stdin)
+	text, _ := reader.ReadString('\x13')
+	wordsSlice := strings.Fields(text)
+	return wordsSlice
+}
+
+type TotalNumber struct {
+	totalNumber int
+	sync.Mutex
+}
+
+func countLetters(s string, wg *sync.WaitGroup, total *TotalNumber) {
+	defer wg.Done()
+	var letters int
+	for _, r := range s {
+		if unicode.IsLetter(r) {
+			letters += 1
+		}
+	}
+	total.Lock()
+	total.totalNumber += letters
+	total.Unlock()
+}
+
+func main() {
+	var wg sync.WaitGroup
+	newTotal := TotalNumber{}
+	newAnalize := inputAnalize()
+	for i := 0; i < len(newAnalize); i++ {
+		wg.Add(1)
+		go countLetters(newAnalize[i], &wg, &newTotal)
+	}
+	wg.Wait()
+	fmt.Println("\nThe total number of letters is", newTotal.totalNumber)
+}
